@@ -1,0 +1,107 @@
+// Sample Data (In a real app, this comes from a Database)
+const studentDatabase = [
+    { name: "Chitaki Basaveshwar Reddy", roll: "25XW5A0311", feeDue: "₹0 (Paid)", status: "Clear" },
+    { name: "John Doe", roll: "25XW5A0301", feeDue: "₹15,000", status: "Pending" },
+    { name: "Anjali Sharma", roll: "25XW5A0305", feeDue: "₹5,500", status: "Partial" }
+];
+
+function checkFee() {
+    const nameInput = document.getElementById('studentName').value.trim();
+    const rollInput = document.getElementById('rollNumber').value.trim();
+    const resultDiv = document.getElementById('result');
+
+    // Find student in our "database"
+    const student = studentDatabase.find(s => 
+        s.roll.toLowerCase() === rollInput.toLowerCase()
+    );
+
+    resultDiv.style.display = "block";
+
+    if (student) {
+        resultDiv.innerHTML = `
+            <strong>Name:</strong> ${student.name}<br>
+            <strong>Roll No:</strong> ${student.roll}<br>
+            <strong>Fee Amount:</strong> ${student.feeDue}<br>
+            <strong>Status:</strong> <span style="color: ${student.status === 'Clear' ? 'green' : 'red'}">${student.status}</span>
+        `;
+    } else {
+        resultDiv.innerHTML = `<span style="color: red;">No record found for Roll Number: ${rollInput}</span>`;
+    }
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 350px;
+}
+
+h2 { color: #2c3e50; }
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover { background-color: #219150; }
+
+.result-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #e8f6ef;
+    border: 1px solid #27ae60;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostel Fee Inquiry</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Hostel Fee Portal</h2>
+        <p>Enter your details to check your pending balance</p>
+        
+        <div class="input-group">
+            <input type="text" id="studentName" placeholder="Full Name">
+            <input type="text" id="rollNumber" placeholder="Roll Number (e.g., 25XW5A0311)">
+            <button onclick="checkFee()">Check Fee Status</button>
+        </div>
+
+        <div id="result" class="result-box" style="display:none;">
+            </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
