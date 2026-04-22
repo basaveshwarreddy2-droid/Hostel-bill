@@ -1,69 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hostel Bill Portal</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
-        .container { max-width: 400px; margin: auto; border: 1px solid #ccc; padding: 20px; border-radius: 8px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        #result { margin-top: 20px; padding: 10px; border: 1px dashed #007bff; display: none; background: #f9f9f9; }
-        .error { color: red; font-weight: bold; }
-    </style>
-</head>
-<body>
+import pytesseract
+from PIL import Image
+import pandas as pd
+import os
 
-<div class="container">
-    <h2>Check Hostel Mess Due</h2>
-    <label for="rollNumber">Enter Roll Number:</label>
-    <input type="text" id="rollNumber" placeholder="e.g., 2024-ABC-01">
-    <button onclick="checkFee()">Check Status</button>
+# 1. Configuration - Set path to your Tesseract executable if on Windows
+# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-    <div id="result"></div>
-</div>
-
-<script>
-    async function checkFee() {
-        const rollInput = document.getElementById('rollNumber').value.trim().toUpperCase();
-        const resultDiv = document.getElementById('result');
-        
-        // IMPORTANT: Replace the URL below with your actual SheetDB API URL
-        const apiUrl = "https://sheetdb.io/api/v1/YOUR_API_ID_HERE"; 
-
-        if (rollInput === "") {
-            alert("Please enter a Roll Number");
-            return;
-        }
-
-        resultDiv.style.display = "block";
-        resultDiv.innerHTML = "Searching...";
-
-        try {
-            const response = await fetch(apiUrl);
-            const students = await response.json();
+def extract_data_from_image(image_path):
+    # Load image
+    img = Image.open(image_path)
+    
+    # Extract text from image
+    raw_text = pytesseract.image_to_string(img)
+    
+    # Simple logic to split lines and columns
+    lines = raw_text.split('\n')
+    data = []
+    for line in lines:
+        parts = line.split()
+        if len(parts) >= 3: # Ensuring we have Roll No, Name, and Dues
+            data.append(parts)
             
-            // This searches for the student matching the Roll Number
-            const student = students.find(s => s.RollNumber.toString().toUpperCase() === rollInput);
+    return data
 
-            if (student) {
-                resultDiv.innerHTML = `
-                    <strong>Name:</strong> ${student.Name}<br>
-                    <strong>Roll No:</strong> ${student.RollNumber}<br>
-                    <strong>Hostel Mess Due:</strong> ₹${student.FeeDue}<br>
-                    <strong>Status:</strong> ${student.Status}
-                `;
-            } else {
-                resultDiv.innerHTML = "<span class='error'>No record found. Check the Roll Number.</span>";
-            }
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            resultDiv.innerHTML = "<span class='error'>Error loading data. Check your API link or internet connection.</span>";
-        }
-    }
-</script>
+# 2. Process all images in a folder
+folder_path = './mess_images' # Put your .jpg files here
+all_records = []
 
-</body>
-</html>
+for filename in os.listdir(folder_path):
+    if filename.endswith(".jpg"):
+        file_path = os.path.join(folder_path, filename)
+        print(f"Processing {filename}...")
+        all_records.extend(extract_data_from_image(file_path))
+
+# 3. Save to CSV
+df = pd.DataFrame(all_records)
+df.to_csv('hostel_dues_2025_2026.csv', index=False)
+print("Extraction complete! File saved as hostel_dues_2025_2026.csv")
