@@ -1,5 +1,69 @@
-<input type="text" id="rollNumber" placeholder="Enter Roll Number">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostel Bill Portal</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        .container { max-width: 400px; margin: auto; border: 1px solid #ccc; padding: 20px; border-radius: 8px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #result { margin-top: 20px; padding: 10px; border: 1px dashed #007bff; display: none; background: #f9f9f9; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-<button onclick="checkFee()">Check Status</button>
+<div class="container">
+    <h2>Check Hostel Mess Due</h2>
+    <label for="rollNumber">Enter Roll Number:</label>
+    <input type="text" id="rollNumber" placeholder="e.g., 2024-ABC-01">
+    <button onclick="checkFee()">Check Status</button>
 
-<div id="result" style="display:none;"></div>
+    <div id="result"></div>
+</div>
+
+<script>
+    async function checkFee() {
+        const rollInput = document.getElementById('rollNumber').value.trim().toUpperCase();
+        const resultDiv = document.getElementById('result');
+        
+        // IMPORTANT: Replace the URL below with your actual SheetDB API URL
+        const apiUrl = "https://sheetdb.io/api/v1/YOUR_API_ID_HERE"; 
+
+        if (rollInput === "") {
+            alert("Please enter a Roll Number");
+            return;
+        }
+
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = "Searching...";
+
+        try {
+            const response = await fetch(apiUrl);
+            const students = await response.json();
+            
+            // This searches for the student matching the Roll Number
+            const student = students.find(s => s.RollNumber.toString().toUpperCase() === rollInput);
+
+            if (student) {
+                resultDiv.innerHTML = `
+                    <strong>Name:</strong> ${student.Name}<br>
+                    <strong>Roll No:</strong> ${student.RollNumber}<br>
+                    <strong>Hostel Mess Due:</strong> ₹${student.FeeDue}<br>
+                    <strong>Status:</strong> ${student.Status}
+                `;
+            } else {
+                resultDiv.innerHTML = "<span class='error'>No record found. Check the Roll Number.</span>";
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            resultDiv.innerHTML = "<span class='error'>Error loading data. Check your API link or internet connection.</span>";
+        }
+    }
+</script>
+
+</body>
+</html>
